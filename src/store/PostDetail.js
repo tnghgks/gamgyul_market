@@ -1,50 +1,29 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { authInstance } from "../Api/api";
 
-const FETCH_POST_DATA = createAsyncThunk(
-  "postDetail/FETCH_POST_DATA",
-  async ({ id, token }) => {
-    try {
-      const response = await fetch(
-        `https://mandarin.api.weniv.co.kr/post/${id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const { post } = await response.json();
+const FETCH_POST_DATA = createAsyncThunk("postDetail/FETCH_POST_DATA", async ({ id }) => {
+  try {
+    const {
+      data: { post },
+    } = await authInstance.get(`/post/${id}`);
 
-      return post;
-    } catch (error) {
-      console.log(error);
-    }
+    return post;
+  } catch (error) {
+    console.log(error);
   }
-);
+});
 
-const FETCH_COMMENT_DATA = createAsyncThunk(
-  "postDetail/FETCH_COMMENT_DATA",
-  async ({ id, token }) => {
-    try {
-      const response = await fetch(
-        `https://mandarin.api.weniv.co.kr/post/${id}/comments`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const { comments } = await response.json();
+const FETCH_COMMENT_DATA = createAsyncThunk("postDetail/FETCH_COMMENT_DATA", async ({ id }) => {
+  try {
+    const {
+      data: { comments },
+    } = await authInstance.get(`/post/${id}/comments`);
 
-      return comments;
-    } catch (error) {
-      console.log(error);
-    }
+    return comments;
+  } catch (error) {
+    console.log(error);
   }
-);
+});
 
 const initialState = {
   post: {},

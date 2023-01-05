@@ -12,7 +12,6 @@ const registeredSlice = createSlice({
   },
   reducers: {
     SET_EMAIL_PASSWORD: (state, action) => {
-      console.log(action);
       state.email = action.payload.email;
       state.password = action.payload.password;
     },

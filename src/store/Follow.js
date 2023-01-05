@@ -1,15 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { authInstance } from "../Api/api";
 
-export const SET_FOLLOWER_LIST = createAsyncThunk("profile/SET_FOLLOWER_LIST", async ({ accountname, token, limit }) => {
+export const SET_FOLLOWER_LIST = createAsyncThunk("profile/SET_FOLLOWER_LIST", async ({ accountname, limit }) => {
   try {
-    const res = await fetch(`https://mandarin.api.weniv.co.kr/profile/${accountname}/follower?limit=${limit}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-    });
-    const followerData = await res.json();
+    const { data: followerData } = await authInstance.get(`/profile/${accountname}/follower?limit=${limit}`);
 
     return followerData;
   } catch (error) {
@@ -17,17 +11,10 @@ export const SET_FOLLOWER_LIST = createAsyncThunk("profile/SET_FOLLOWER_LIST", a
   }
 });
 
-export const SET_FOLLOWING_LIST = createAsyncThunk("profile/SET_FOLLOWING_LIST", async ({ accountname, token, limit }) => {
+export const SET_FOLLOWING_LIST = createAsyncThunk("profile/SET_FOLLOWING_LIST", async ({ accountname, limit }) => {
   try {
-    const res = await fetch(`https://mandarin.api.weniv.co.kr/profile/${accountname}/following?limit=${limit}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-    });
-    const followingData = await res.json();
-    console.log(followingData);
+    const { data: followingData } = await authInstance.get(`/profile/${accountname}/following?limit=${limit}`);
+
     return followingData;
   } catch (error) {
     console.log(error);
@@ -42,11 +29,6 @@ const initialState = {
 const followListSlice = createSlice({
   name: "followList",
   initialState,
-  reducers: {
-    FOLLOW: (state, action) => {
-      state.users.push(action.payload);
-    },
-  },
   extraReducers: (builder) => {
     builder.addCase(SET_FOLLOWER_LIST.fulfilled, (state, action) => {
       state.users = action.payload;
@@ -56,7 +38,5 @@ const followListSlice = createSlice({
     });
   },
 });
-
-export const { FOLLOW } = followListSlice.actions;
 
 export default followListSlice.reducer;

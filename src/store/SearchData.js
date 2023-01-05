@@ -1,21 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { authInstance } from "../Api/api";
 
 const initialState = {
   data: [],
   status: "",
 };
 
-export const asyncSearchFetch = createAsyncThunk("searchDataSlice/asyncSearchFetch", async ({ searchInput, token, pageNum = 1, signal = null }) => {
+export const asyncSearchFetch = createAsyncThunk("searchDataSlice/asyncSearchFetch", async ({ searchInput, pageNum = 1, signal = null }) => {
   try {
-    const response = await fetch(`https://mandarin.api.weniv.co.kr/user/searchuser/?keyword=${searchInput}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-      signal,
-    });
-    const users = await response.json();
+    const { data: users } = await authInstance.get(`/user/searchuser/?keyword=${searchInput}`, { signal });
 
     return users.slice(0, pageNum * 100);
   } catch (error) {

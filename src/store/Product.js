@@ -1,89 +1,47 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { authInstance, defaultInstance } from "../Api/api";
 
-export const ADD_PRODUCT = createAsyncThunk(
-  "product/ADD_PRODUCT",
-  async ({ productData, token }) => {
-    try {
-      const res = await fetch("https://mandarin.api.weniv.co.kr/product", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify(productData),
-      });
-      const { product } = await res.json();
-      return product;
-    } catch (error) {
-      console.log(error);
-    }
+export const ADD_PRODUCT = createAsyncThunk("product/ADD_PRODUCT", async ({ productData }) => {
+  try {
+    const { product } = await authInstance.post(`/product`, productData);
+    return product;
+  } catch (error) {
+    console.log(error);
   }
-);
+});
 
-export const MODIFY_PRODUCT = createAsyncThunk(
-  "product/MODIFY_PRODUCT",
-  async ({ token, productData, id }) => {
-    try {
-      const res = await fetch(
-        `https://mandarin.api.weniv.co.kr/product/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify(productData),
-        }
-      );
-      const { product } = await res.json();
-      return product;
-    } catch (error) {
-      console.log(error);
-    }
+export const MODIFY_PRODUCT = createAsyncThunk("product/MODIFY_PRODUCT", async ({ productData, id }) => {
+  try {
+    const { data: product } = await authInstance.put(`/product/${id}`, productData);
+    return product;
+  } catch (error) {
+    console.log(error);
   }
-);
+});
 
-export const MODIFY_PRODUCT_IMAGE = createAsyncThunk(
-  "product/MODIFY_PRODUCT_IMAGE",
-  async ({ formData }) => {
-    try {
-      const res = await fetch(
-        `https://mandarin.api.weniv.co.kr/image/uploadfile`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-      const imgData = await res.json();
-      if (!imgData) return;
-      return `https://mandarin.api.weniv.co.kr/${imgData.filename}`;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-);
+export const MODIFY_PRODUCT_IMAGE = createAsyncThunk("product/MODIFY_PRODUCT_IMAGE", async ({ formData }) => {
+  try {
+    const {
+      data: { filename },
+    } = await defaultInstance.post("/image/uploadfile", formData);
 
-export const DETAIL_PRODUCT = createAsyncThunk(
-  "product/DETAIL_PRODUCT",
-  async ({ token, id }) => {
-    try {
-      const res = await fetch(
-        `https://mandarin.api.weniv.co.kr/product/detail/${id}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-        }
-      );
-      const { product } = await res.json();
-      return product;
-    } catch (error) {
-      console.log(error);
-    }
+    if (!filename) return;
+    return `https://mandarin.api.weniv.co.kr/${filename}`;
+  } catch (error) {
+    console.log(error);
   }
-);
+});
+
+export const DETAIL_PRODUCT = createAsyncThunk("product/DETAIL_PRODUCT", async ({ id }) => {
+  try {
+    const {
+      data: { product },
+    } = await defaultInstance.get(`/product/detail/${id}`);
+    return product;
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 const initialState = {
   id: "",
@@ -117,6 +75,7 @@ const productSlice = createSlice({
       state.author = action.payload.author;
     });
     builder.addCase(MODIFY_PRODUCT.fulfilled, (state, action) => {
+      console.log(action.payload);
       state.id = action.payload.id;
       state.itemName = action.payload.itemName;
       state.price = action.payload.price;

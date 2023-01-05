@@ -1,15 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { authInstance } from "../Api/api";
 
-export const SET_PROFILE = createAsyncThunk("profile/SET_PROFILE", async ({ accountname, token }) => {
+export const SET_PROFILE = createAsyncThunk("profile/SET_PROFILE", async ({ accountname }) => {
   try {
-    const res = await fetch(`https://mandarin.api.weniv.co.kr/profile/${accountname}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-    });
-    const { profile } = await res.json();
+    const {
+      data: { profile },
+    } = await authInstance.get(`profile/${accountname}`);
 
     return profile;
   } catch (error) {
@@ -17,54 +13,38 @@ export const SET_PROFILE = createAsyncThunk("profile/SET_PROFILE", async ({ acco
   }
 });
 
-export const FOLLOW = createAsyncThunk("profile/FOLLOW", async ({ dispatch, accountname, token }) => {
+export const FOLLOW = createAsyncThunk("profile/FOLLOW", async ({ accountname, token }, ThunkApi) => {
   try {
-    const res = await fetch(`https://mandarin.api.weniv.co.kr/profile/${accountname}/follow`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-    });
-    const { profile, message } = await res.json();
+    const {
+      data: { profile, message },
+    } = await authInstance.post(`/profile/${accountname}/follow`);
 
     if (!profile) return alert(message);
 
-    dispatch(SET_PROFILE({ accountname, token }));
+    ThunkApi.dispatch(SET_PROFILE({ accountname, token }));
   } catch (error) {
     console.log(error);
   }
 });
 
-export const UN_FOLLOW = createAsyncThunk("profile/UNFOLLOW", async ({ dispatch, accountname, token }) => {
+export const UN_FOLLOW = createAsyncThunk("profile/UNFOLLOW", async ({ accountname, token }, ThunkApi) => {
   try {
-    const res = await fetch(`https://mandarin.api.weniv.co.kr/profile/${accountname}/unfollow`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-    });
-    const { profile, message } = await res.json();
+    const {
+      data: { profile, message },
+    } = await authInstance.delete(`/profile/${accountname}/unfollow`);
 
     if (!profile) return alert(message);
-    dispatch(SET_PROFILE({ accountname, token }));
+    ThunkApi.dispatch(SET_PROFILE({ accountname, token }));
   } catch (error) {
     console.log(error);
   }
 });
 
-export const MODIFY_PROFILE = createAsyncThunk("profile/MODIFY_PROFILE", async ({ editUserData, token }) => {
+export const MODIFY_PROFILE = createAsyncThunk("profile/MODIFY_PROFILE", async ({ editUserData }) => {
   try {
-    const res = await fetch(`https://mandarin.api.weniv.co.kr/user`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(editUserData),
-    });
-    const { user } = await res.json();
+    const {
+      data: { user },
+    } = await authInstance.put(`/user`, editUserData);
 
     return user;
   } catch (error) {

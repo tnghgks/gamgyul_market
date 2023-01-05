@@ -1,13 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { authInstance } from "../Api/api";
 
 export const SET_USERINFO = createAsyncThunk("userInfo/SET_USERINFO", async (token) => {
-  const response = await fetch("https://mandarin.api.weniv.co.kr/user/myinfo", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  const { user } = await response.json();
+  const {
+    data: { user },
+  } = await authInstance.get("/user/myinfo");
 
   return user;
 });

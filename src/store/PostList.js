@@ -1,15 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { authInstance } from "../Api/api";
 
-const SET_FOLLOWERS_POSTS = createAsyncThunk("postList/SET_FOLLOWERS_POSTS", async ({ token, pageNum = 1 }) => {
+const SET_FOLLOWERS_POSTS = createAsyncThunk("postList/SET_FOLLOWERS_POSTS", async ({ pageNum = 1 }) => {
   try {
-    const res = await fetch(`https://mandarin.api.weniv.co.kr/post/feed/?limit=${pageNum * 5}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-    });
-    const { posts } = await res.json();
+    const {
+      data: { posts },
+    } = await authInstance.get(`/post/feed/?limit=${pageNum * 5}`);
 
     return posts;
   } catch (error) {
@@ -19,14 +15,9 @@ const SET_FOLLOWERS_POSTS = createAsyncThunk("postList/SET_FOLLOWERS_POSTS", asy
 
 const SET_USER_POSTS = createAsyncThunk("postList/SET_USER_POSTS", async ({ accountname, token, pageNum = 1 }) => {
   try {
-    const res = await fetch(`https://mandarin.api.weniv.co.kr/post/${accountname}/userpost/?limit=${pageNum * 5}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-type": "application/json",
-      },
-    });
-    const { post } = await res.json();
+    const {
+      data: { post },
+    } = await authInstance.get(`/post/${accountname}/userpost/?limit=${pageNum * 5}`);
 
     return post;
   } catch (error) {

@@ -6,77 +6,7 @@ import FileUploadBtn from "../../Components/Button/FileUploadBtn";
 import IconDelete from "../../Components/icon/IconDelete";
 import { getCookie } from "../../cookie";
 import { useSelector } from "react-redux";
-
-const Container = styled.div`
-  padding-top: 48px;
-  min-height: 100vh;
-  overflow-x: hidden;
-`;
-
-const UploadContainer = styled.section`
-  display: flex;
-  height: 100%;
-  padding: 32px 16px 0 70px;
-`;
-
-const InputContainer = styled.section`
-  width: 100%;
-`;
-
-const BasicProfileImg = styled.img`
-  display: inline-block;
-  width: 42px;
-  height: 42px;
-  position: fixed;
-  top: 68px;
-  left: 16px;
-  margin-right: 12px;
-  border-radius: 50%;
-`;
-
-const Textarea = styled.textarea`
-  width: 100%;
-  margin-bottom: 16px;
-  padding: 0;
-  border: none;
-  font-family: "LINESeedKR-Bd";
-  font-size: 1.4rem;
-  line-height: 1.753rem;
-  resize: none;
-  &:focus {
-    outline: none;
-  }
-  &::placeholder {
-    color: #c4c4c4;
-  }
-`;
-
-const ImageList = styled.ol`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  overflow-x: scroll;
-  gap: 8px;
-`;
-
-const ImageContainer = styled.div`
-  position: relative;
-`;
-
-const DeleteBtn = styled.button`
-  background-color: transparent;
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  z-index: 1;
-  border: none;
-  cursor: pointer;
-`;
-
-const Image = styled.img`
-  object-fit: cover;
-  border-radius: 10px;
-`;
+import axios from "axios";
 
 // 상수로 빼서 관리
 const baseURL = "https://mandarin.api.weniv.co.kr";
@@ -148,23 +78,27 @@ function PostUpload() {
 
   // 서버로 이미지 보내기
   const getImageUrls = async () => {
-    if (imageList.length === 0) throw new Error("등록된 미리보기 이미지가 없습니다");
+    if (imageList.length === 0)
+      throw new Error("등록된 미리보기 이미지가 없습니다");
     const formData = new FormData();
     for (const image of imageList) {
       formData.append("image", dataURLtoFile(image.result, image.filename));
     }
-    const res = await fetch(`${baseURL}/image/uploadfiles`, {
-      method: "POST",
-      body: formData,
-      headers: {},
-    });
 
-    const data = await res.json();
+    const res = await axios.post(`${baseURL}/image/uploadfiles`, formData, {}); //url,data,config(headers ... )
+    //axios.post(url, data, { // receive two parameter endpoint url ,form data })
+    // fetch(`${baseURL}/image/uploadfiles`, {
+    //   method: "POST",
+    //   body: formData,
+    //   headers: {},
+    // });
 
-    const isArray = Array.isArray(data);
-    if (!isArray) throw new Error(data.message);
+    const isArray = Array.isArray(res.data);
+    if (!isArray) throw new Error(res.data.message);
 
-    const imgURLtoString = data.map((d) => `${baseURL}/${d.filename}`).join(",");
+    const imgURLtoString = res.data
+      .map((d) => `${baseURL}/${d.filename}`)
+      .join(",");
 
     return imgURLtoString;
   };
@@ -178,9 +112,7 @@ function PostUpload() {
           image: await getImageUrls(),
         },
       };
-      await fetch(`${baseURL}/post`, {
-        method: "POST",
-        body: JSON.stringify(body),
+      await axios.post(`${baseURL}/post`, body, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-type": "application/json",
@@ -194,11 +126,22 @@ function PostUpload() {
   };
   return (
     <Container>
-      <UploadNav children="업로드" btnDisabled={!imageList.length} bgColor={!imageList.length ? "light" : "main"} onClickUpload={onClickUpload} />
+      <UploadNav
+        children="업로드"
+        btnDisabled={!imageList.length}
+        bgColor={!imageList.length ? "light" : "main"}
+        onClickUpload={onClickUpload}
+      />
       <UploadContainer>
         <BasicProfileImg src={profile.image} />
         <InputContainer>
-          <Textarea value={textContent} rows={1} ref={textareaRef} onChange={handleResizeHeight} placeholder="게시글 입력하기..." />
+          <Textarea
+            value={textContent}
+            rows={1}
+            ref={textareaRef}
+            onChange={handleResizeHeight}
+            placeholder="게시글 입력하기..."
+          />
 
           <ImageList>
             {imageList.map((img) => (
@@ -219,7 +162,13 @@ function PostUpload() {
                           }
                     }
                   />
-                  <DeleteBtn onClick={() => setImageList((prev) => prev.filter((a) => a.id !== img.id))}>
+                  <DeleteBtn
+                    onClick={() =>
+                      setImageList((prev) =>
+                        prev.filter((a) => a.id !== img.id)
+                      )
+                    }
+                  >
                     <IconDelete />
                   </DeleteBtn>
                 </ImageContainer>
@@ -234,3 +183,74 @@ function PostUpload() {
 }
 
 export default PostUpload;
+
+const Container = styled.div`
+  padding-top: 48px;
+  min-height: 100vh;
+  overflow-x: hidden;
+`;
+
+const UploadContainer = styled.section`
+  display: flex;
+  height: 100%;
+  padding: 32px 16px 0 70px;
+`;
+
+const InputContainer = styled.section`
+  width: 100%;
+`;
+
+const BasicProfileImg = styled.img`
+  display: inline-block;
+  width: 42px;
+  height: 42px;
+  position: fixed;
+  top: 68px;
+  left: 16px;
+  margin-right: 12px;
+  border-radius: 50%;
+`;
+
+const Textarea = styled.textarea`
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 0;
+  border: none;
+  font-family: "LINESeedKR-Bd";
+  font-size: 1.4rem;
+  line-height: 1.753rem;
+  resize: none;
+  &:focus {
+    outline: none;
+  }
+  &::placeholder {
+    color: #c4c4c4;
+  }
+`;
+
+const ImageList = styled.ol`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  overflow-x: scroll;
+  gap: 8px;
+`;
+
+const ImageContainer = styled.div`
+  position: relative;
+`;
+
+const DeleteBtn = styled.button`
+  background-color: transparent;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+  border: none;
+  cursor: pointer;
+`;
+
+const Image = styled.img`
+  object-fit: cover;
+  border-radius: 10px;
+`;
